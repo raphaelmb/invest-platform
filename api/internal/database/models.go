@@ -17,3 +17,19 @@ type Asset struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type Wallet struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type WalletAsset struct {
+	ID        uuid.UUID
+	Amount    string
+	Shares    int32
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	WalletID  uuid.UUID
+	AssetID   uuid.UUID
+}

@@ -31,7 +31,7 @@ func (apiCfg *apiConfig) handlerCreateAsset(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user, err := apiCfg.DB.CreateAsset(r.Context(), database.CreateAssetParams{
+	asset, err := apiCfg.DB.CreateAsset(r.Context(), database.CreateAssetParams{
 		ID:        params.ID,
 		Symbol:    params.Symbol,
 		Price:     params.Price,
@@ -43,7 +43,7 @@ func (apiCfg *apiConfig) handlerCreateAsset(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	helper.RespondWithJSON(w, http.StatusCreated, types.DatabaseAssetToAsset(user))
+	helper.RespondWithJSON(w, http.StatusCreated, types.DatabaseAssetToAsset(asset))
 }
 
 func (apiCfg *apiConfig) handlerGetAllAssets(w http.ResponseWriter, r *http.Request) {
@@ -52,5 +52,5 @@ func (apiCfg *apiConfig) handlerGetAllAssets(w http.ResponseWriter, r *http.Requ
 		helper.RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Could not retrieve assets: %v", err))
 		return
 	}
-	helper.RespondWithJSON(w, http.StatusCreated, types.DatabaseAssetsToAssets(assets))
+	helper.RespondWithJSON(w, http.StatusOK, types.DatabaseAssetsToAssets(assets))
 }
