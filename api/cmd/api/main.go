@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/raphaelmb/invest-platform/api/internal/database"
@@ -41,12 +40,8 @@ func main() {
 		DB: db,
 	}
 
-	router := chi.NewRouter()
-	router.Post("/assets", apiCfg.handlerCreateAsset)
-	router.Get("/assets", apiCfg.handlerGetAllAssets)
-
 	srv := &http.Server{
-		Handler: router,
+		Handler: apiCfg.routes(),
 		Addr:    fmt.Sprintf(":%s", port),
 	}
 

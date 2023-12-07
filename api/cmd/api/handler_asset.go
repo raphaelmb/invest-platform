@@ -7,58 +7,50 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/raphaelmb/invest-platform/api/helper"
 	"github.com/raphaelmb/invest-platform/api/internal/database"
+	"github.com/raphaelmb/invest-platform/api/internal/types"
 )
 
 func (apiCfg *apiConfig) handlerCreateAsset(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Symbol string `json:"symbol"`
-		Price  string `json:"price"`
+		ID     uuid.UUID `json:"id" validate:"required"`
+		Symbol string    `json:"symbol" validate:"required"`
+		Price  string    `json:"price" validate:"required"`
 	}
 	var params parameters
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
+		helper.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	err = helper.Validate(params)
+	if err != nil {
+		helper.RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Missing fields: %v", err))
 		return
 	}
 
 	user, err := apiCfg.DB.CreateAsset(r.Context(), database.CreateAssetParams{
-		ID:        uuid.New(),
+		ID:        params.ID,
 		Symbol:    params.Symbol,
 		Price:     params.Price,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		helper.RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Could not create asset: %v", err))
 		return
 	}
 
-	data, err := json.Marshal(user)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write(data)
+	helper.RespondWithJSON(w, http.StatusCreated, types.DatabaseAssetToAsset(user))
 }
 
 func (apiCfg *apiConfig) handlerGetAllAssets(w http.ResponseWriter, r *http.Request) {
 	assets, err := apiCfg.DB.GetAllAssets(r.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		helper.RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Could not retrieve assets: %v", err))
 		return
 	}
-
-	data, err := json.Marshal(assets)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
+	helper.RespondWithJSON(w, http.StatusCreated, types.DatabaseAssetsToAssets(assets))
 }
