@@ -23,7 +23,7 @@ func (apiCfg *apiConfig) handlerCreateWalletAsset(w http.ResponseWriter, r *http
 
 	type parameters struct {
 		AssetID uuid.UUID `json:"asset_id" validate:"required"`
-		Shares  int       `json:"shares" validate:"required"`
+		Shares  int32     `json:"shares" validate:"required"`
 	}
 	var params parameters
 	err = json.NewDecoder(r.Body).Decode(&params)
@@ -42,7 +42,7 @@ func (apiCfg *apiConfig) handlerCreateWalletAsset(w http.ResponseWriter, r *http
 		ID:        uuid.New(),
 		AssetID:   params.AssetID,
 		WalletID:  id,
-		Shares:    int32(params.Shares),
+		Shares:    params.Shares,
 		Amount:    "0",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -68,5 +68,6 @@ func (apiCfg *apiConfig) handlerGetAllWalletAsset(w http.ResponseWriter, r *http
 		helper.RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Could not retrieve wallet asset: %v", err))
 		return
 	}
-	helper.RespondWithJSON(w, http.StatusOK, walletAssets)
+
+	helper.RespondWithJSON(w, http.StatusOK, types.DatabaseWalletAssetsToWalletAssets(walletAssets))
 }

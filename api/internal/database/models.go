@@ -5,10 +5,98 @@
 package database
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type OrderStatus string
+
+const (
+	OrderStatusPENDING OrderStatus = "PENDING"
+	OrderStatusOPEN    OrderStatus = "OPEN"
+	OrderStatusCLOSED  OrderStatus = "CLOSED"
+	OrderStatusFAILED  OrderStatus = "FAILED"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus
+	Valid       bool // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
+type OrderType string
+
+const (
+	OrderTypeBUY  OrderType = "BUY"
+	OrderTypeSELL OrderType = "SELL"
+)
+
+func (e *OrderType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderType(s)
+	case string:
+		*e = OrderType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderType: %T", src)
+	}
+	return nil
+}
+
+type NullOrderType struct {
+	OrderType OrderType
+	Valid     bool // Valid is true if OrderType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderType) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderType), nil
+}
 
 type Asset struct {
 	ID        uuid.UUID
@@ -16,6 +104,19 @@ type Asset struct {
 	Price     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type Order struct {
+	ID        uuid.UUID
+	Type      OrderType
+	Status    OrderStatus
+	Shares    int32
+	Price     string
+	Partial   int32
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	WalletID  uuid.UUID
+	AssetID   uuid.UUID
 }
 
 type Wallet struct {

@@ -17,6 +17,7 @@ type apiConfig struct {
 }
 
 func main() {
+	// TODO: refactor main
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)

@@ -55,7 +55,7 @@ const getAllWalletAsset = `-- name: GetAllWalletAsset :many
 SELECT wa.id, wa.amount, wa.shares, wa.created_at, wa.updated_at, wa.wallet_id, wa.asset_id, a.symbol AS asset_symbol, a.price AS asset_price
 FROM wallet_asset AS wa
 JOIN assets as a ON wa.asset_id = a.id
-WHERE wa.wallet_id= $1
+WHERE wa.wallet_id = $1
 `
 
 type GetAllWalletAssetRow struct {
